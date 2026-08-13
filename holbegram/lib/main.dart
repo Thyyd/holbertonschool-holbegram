@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:holbegram/screens/auth/signup_screen.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,12 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: SignUp(
+        emailController: TextEditingController(),
+        usernameController: TextEditingController(),
+        passwordController: TextEditingController(),
+        passwordConfirmController: TextEditingController(),
+      ),
     );
   }
 }
