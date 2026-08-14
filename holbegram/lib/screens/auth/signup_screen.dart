@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holbegram/widgets/text_field.dart';
-import 'package:holbegram/screens/login_screen.dart';
-import 'package:holbegram/methods/auth_methods.dart';
+import 'package:holbegram/screens/auth/login_screen.dart';
+import 'package:holbegram/screens/upload_image_screen.dart';
 
 class SignUp extends StatefulWidget {
   final TextEditingController emailController;
@@ -29,15 +29,6 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   late bool _passwordVisible; // utilisation de late pour dire qu'elle sera initialisée plus tard avec une valeur non nulle
   late bool _passwordConfirmVisible;
-  final AuthMethode _authMethode = AuthMethode();
-
-  // Affiche un SnackBar avec le texte reçu en paramètre.
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
 
   @override
   void initState() {
@@ -146,13 +137,17 @@ class _SignUpState extends State<SignUp> {
                         backgroundColor: WidgetStateProperty.all(Color.fromARGB(218, 226, 37, 24)),
                         shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)))
                       ),
-                      onPressed: () async {
-                        String res = await _authMethode.signUpUser(
-                          email: widget.emailController.text,
-                          password: widget.passwordController.text,
-                          username: widget.usernameController.text
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddPicture(
+                              email: widget.emailController.text,
+                              password: widget.passwordController.text,
+                              username: widget.usernameController.text,
+                            ),
+                          ),
                         );
-                        _showSnackBar(res == "success" ? "Sign Up" : res); // Si res vaut "success", on affiche Login, sinon on affiche le message d'erreur contenu dans res.
                       },
                       child: Text(
                         'Sign up',
