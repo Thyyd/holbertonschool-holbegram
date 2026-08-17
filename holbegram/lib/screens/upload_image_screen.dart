@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
 import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:holbegram/methods/auth_methods.dart';
+import 'package:holbegram/screens/auth/login_screen.dart';
 
 class AddPicture extends StatefulWidget {
   final String email;
@@ -143,6 +146,19 @@ class _AddPictureState extends State<AddPicture> {
                         file: _image
                       );
                       _showSnackBar(res);
+
+                      if (res == "success") {
+                        await Future.delayed(Duration(seconds: 2));
+                        if (!mounted) return;
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(
+                              emailController: TextEditingController(),
+                              passwordController: TextEditingController(),
+                            ),
+                          ),
+                        );
+                      }
                     },
                     child: Text(
                       'Next',
