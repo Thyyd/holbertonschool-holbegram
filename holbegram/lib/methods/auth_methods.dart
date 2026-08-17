@@ -1,8 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:http/http.dart' as http;
+
 import 'package:holbegram/models/user.dart';
-//import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 
 class AuthMethode {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -14,7 +16,10 @@ class AuthMethode {
       return 'Please fill all the fields';
     }
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(), // Suppression des espaces avant le premier et après le dernier caractères avec trim()
+        password: password
+      );
       res = "success";
     }
     catch (error) {
