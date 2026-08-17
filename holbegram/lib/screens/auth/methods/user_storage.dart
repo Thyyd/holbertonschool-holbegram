@@ -10,9 +10,10 @@ class StorageMethods {
   Future<String> uploadImageToStorage(
       bool isPost,
       String childName,
-      Uint8List file,
-  ) async {
-    String uniqueId = const Uuid().v1();
+      Uint8List file, {
+      String? publicId,
+  }) async {
+    String uniqueId = publicId ?? const Uuid().v1();
     var uri = Uri.parse(cloudinaryUrl);
     var request = http.MultipartRequest('POST', uri);
     request.fields['upload_preset'] = cloudinaryPreset;

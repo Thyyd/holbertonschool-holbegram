@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:holbegram/models/post.dart';
+import 'package:holbegram/screens/pages/methods/post_storage.dart';
 
 class Posts extends StatefulWidget {
   const Posts({super.key});
@@ -10,6 +11,14 @@ class Posts extends StatefulWidget {
 }
 
 class _PostsState extends State<Posts> {
+  // Affiche un SnackBar avec le texte reçu en paramètre.
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -63,10 +72,13 @@ class _PostsState extends State<Posts> {
                           Spacer(), // Créé l'espace entre l'username et l'élément situé sur la même ligne ("...")
                           IconButton(
                             icon: Icon(Icons.more_horiz),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Post Deleted')),
-                              );
+                            onPressed: () async {
+                              try {
+                                await PostStorage().deletePost(post.postId, post.publicId);
+                                _showSnackBar("Post Deleted");
+                              } catch (error) {
+                                _showSnackBar("An error occurred: $error");
+                              }
                             },
                           ),
                         ],

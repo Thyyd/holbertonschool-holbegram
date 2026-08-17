@@ -9,6 +9,7 @@ class Post {
   final DateTime datePublished;
   final String postUrl;
   final String profImage;
+  final String publicId;
 
   Post({
     required this.caption,
@@ -19,6 +20,7 @@ class Post {
     required this.datePublished,
     required this.postUrl,
     required this.profImage,
+    required this.publicId
   });
 
   static Post fromSnap(DocumentSnapshot snap) {
@@ -32,6 +34,7 @@ class Post {
       datePublished: (snapshot['datePublished'] as Timestamp).toDate(),
       postUrl: snapshot['postUrl'],
       profImage: snapshot['profImage'],
+      publicId: snapshot['publicId']
     );
   }
 
@@ -45,6 +48,7 @@ class Post {
       'profImage': profImage,
       'caption': caption,
       'likes': likes,
+      'publicId': publicId
     };
   }
 }
