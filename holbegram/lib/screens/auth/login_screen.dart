@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:holbegram/widgets/text_field.dart';
 import 'package:holbegram/screens/auth/signup_screen.dart';
 import 'package:holbegram/methods/auth_methods.dart';
+import 'package:holbegram/screens/home.dart';
 
 class LoginScreen extends StatefulWidget {
   final TextEditingController emailController;
@@ -107,7 +109,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           email: widget.emailController.text,
                           password: widget.passwordController.text
                         );
-                        _showSnackBar(res == "success" ? "Login" : res); // Si res vaut "success", on affiche Login, sinon on affiche le message d'erreur contenu dans res.
+
+                        if (res == "success") {
+                          _showSnackBar("Login");
+                          await Future.delayed(Duration(seconds: 2));
+                          if (!mounted) return;
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => Home()),
+                          );
+                        }
+                        else {
+                          _showSnackBar(res);
+                        }
                       },
                       child: Text(
                         'Log in',
