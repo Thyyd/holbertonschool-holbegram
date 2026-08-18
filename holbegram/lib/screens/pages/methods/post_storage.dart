@@ -59,4 +59,12 @@ class PostStorage {
       // Erreur silencieuse : on ne bloque pas la suppression du post
     }
   }
+
+  // Méthode pour récupérer tous les posts triés du plus récent au moins récent.
+  Stream<QuerySnapshot> getAllPosts() {
+    return _firestore
+      .collection("posts")
+      .orderBy("datePublished", descending: true)
+      .snapshots();
+  }
 }
