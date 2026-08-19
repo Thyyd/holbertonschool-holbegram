@@ -5,10 +5,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:http/http.dart' as http;
 
 import 'package:holbegram/models/user.dart';
+import 'package:holbegram/screens/auth/methods/user_storage.dart';
 
 class AuthMethode {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final StorageMethods _storageMethods = StorageMethods();
+
+  // URL de l'icône de profil par défaut, uploadée une seule fois manuellement sur Cloudinary (dossier Profile_Images)
+  // pour éviter de la ré-uploader (et donc de créer des doublons) à chaque inscription sans photo choisie.
+  static const String _defaultProfileImageUrl = 'https://res.cloudinary.com/jckazhb3/image/upload/v1787095046/User_Icon.png';
+
 
   Future<String> login({required String email, required String password}) async {
     String res = "";
@@ -35,14 +42,20 @@ class AuthMethode {
       return 'Please fill all the fields';
     }
     try {
+      // Upload de l'image AVANT de créer le compte : si ça échoue, aucun compte orphelin n'est créé
+      String photoUrl = file != null
+        ? await _storageMethods.uploadImageToStorage(false, 'Profile_Images', file) // photoUrl prend l'image sélectionnée par l'user
+        : _defaultProfileImageUrl; // Si aucune image choisie → on réutilise l'URL de l'icône par défaut à la place
+
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       User? user = userCredential.user;
+
       Users users = Users(
         uid: user!.uid,
         email: email,
         username: username,
         bio: '',
-        photoUrl: '',
+        photoUrl: photoUrl,
         followers: [],
         following: [],
         posts: [],
