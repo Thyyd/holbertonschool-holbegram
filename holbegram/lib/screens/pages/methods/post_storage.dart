@@ -1,7 +1,9 @@
 import 'dart:typed_data';
+
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:holbegram/models/post.dart';
 import 'package:holbegram/screens/auth/methods/user_storage.dart';
 
@@ -66,5 +68,22 @@ class PostStorage {
       .collection("posts")
       .orderBy("datePublished", descending: true)
       .snapshots();
+  }
+
+  Future<void> toggleSave(String postId, String uid, List saved) async {
+    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+
+    if (saved.contains(postId)) {
+      // Le post est déjà sauvegardé → on le retire
+      await userRef.update({
+        'saved': FieldValue.arrayRemove([postId]), // Retire l'élément sans avoir à récupérer la liste complète et la renvoyer entière.
+      });
+    }
+    else {
+      // Le post n'est pas encore sauvegardé → on l'ajoute
+      await userRef.update({
+        'saved': FieldValue.arrayUnion([postId]), // Ajoute l'élément sans avoir à récupérer la liste complète et la renvoyer entière.
+      });
+    }
   }
 }
