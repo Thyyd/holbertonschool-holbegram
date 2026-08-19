@@ -16,7 +16,7 @@ class PostStorage {
     try {
       String publicId = const Uuid().v1();
 
-      String postUrl =  await _storageMethods.uploadImageToStorage(true, 'Post_Images', image, publicId: publicId);
+      String postUrl = await _storageMethods.uploadImageToStorage(true, 'Post_Images', image, publicId: publicId);
 
       // Création d'un ID unique pour un post
       String postId = const Uuid().v1();
@@ -34,7 +34,20 @@ class PostStorage {
         publicId: publicId
       );
 
-      await _firestore.collection("posts").doc(postId).set(post.toJson());
+      // Création des références des documents
+      final userRef = _firestore.collection('users').doc(uid);
+      final postRef = _firestore.collection("posts").doc(postId);
+
+      // Création d'un batch, un lot d'opération
+      WriteBatch batch = _firestore.batch();
+      // Ajout des opérations au lot d'opération
+      batch.set(postRef, post.toJson());
+      batch.update(userRef, {
+        'posts': FieldValue.arrayUnion([postId]),
+      });
+
+      // Envoie du lot d'opération, faisant ainsi les 2 opérations ensembles.
+      await batch.commit();
 
       res = "Ok";
     }
@@ -44,8 +57,21 @@ class PostStorage {
     return res;
   }
 
-  Future<void> deletePost(String postId, String publicId) async {
-    await _firestore.collection('posts').doc(postId).delete();
+  Future<void> deletePost(String postId, String publicId, String uid) async {
+    // Création des références des documents
+    final postRef = _firestore.collection('posts').doc(postId);
+    final userRef = _firestore.collection('users').doc(uid);
+
+    // Création d'un batch, un lot d'opération
+    WriteBatch batch = _firestore.batch();
+    // Ajout des opérations au lot d'opération
+    batch.delete(postRef);
+    batch.update(userRef, {
+      'posts': FieldValue.arrayRemove([postId]),
+    });
+
+    // Envoi du lot d'opération, faisant ainsi les 2 opérations ensemble.
+    await batch.commit();
 
     // Suppression de l'image Cloudinary (best effort, ne bloque pas la fonction)
     try {
@@ -85,5 +111,14 @@ class PostStorage {
         'saved': FieldValue.arrayUnion([postId]), // Ajoute l'élément sans avoir à récupérer la liste complète et la renvoyer entière.
       });
     }
+  }
+
+  // Méthode pour récupérer tous les posts de l'user connecté, triés du plus récent au moins récent.
+  Stream<QuerySnapshot> getUserPosts(String uid) {
+    return _firestore
+      .collection("posts")
+      .where('uid', isEqualTo: uid)
+      .orderBy("datePublished", descending: true)
+      .snapshots();
   }
 }
