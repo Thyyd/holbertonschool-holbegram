@@ -1,16 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
 import 'package:holbegram/models/post.dart';
 import 'package:holbegram/screens/pages/methods/post_storage.dart';
+import 'package:holbegram/providers/user_provider.dart';
 
 class Posts extends StatefulWidget {
-  const Posts({super.key});
+  final List<String>? postIds; // null = tous les posts
+
+  const Posts({super.key, this.postIds});
 
   @override
   State<Posts> createState() => _PostsState();
 }
 
 class _PostsState extends State<Posts> {
+  final String uid = FirebaseAuth.instance.currentUser!.uid;
+
   // Affiche un SnackBar avec le texte reçu en paramètre.
   void _showSnackBar(String message) {
     if (!mounted) return;
@@ -22,7 +30,13 @@ class _PostsState extends State<Posts> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('posts').snapshots(),
+      stream: (widget.postIds == null || widget.postIds!.isEmpty)
+        ? FirebaseFirestore.instance.collection('posts').snapshots()
+        : FirebaseFirestore.instance
+            .collection('posts')
+            .where('postId', whereIn: widget.postIds)
+            .snapshots(),
+
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Error ${snapshot.error}'));
@@ -39,6 +53,8 @@ class _PostsState extends State<Posts> {
           itemCount: data.length,
           itemBuilder: (context, index) {
             Post post = Post.fromSnap(data[index]);
+            final currentUser = context.watch<UserProvider>().user;
+            bool isSaved = currentUser.saved.contains(post.postId);
 
             return SingleChildScrollView(
               child: Container(
@@ -116,7 +132,7 @@ class _PostsState extends State<Posts> {
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.favorite_border),
+                          icon: Icon(Icons.favorite_outline),
                           onPressed: () {},
                         ),
                         IconButton(
@@ -128,9 +144,19 @@ class _PostsState extends State<Posts> {
                           onPressed: () {},
                         ),
                         Spacer(), // Pour "pousser" le dernier icône à droite, pour respecter le layout.
+
+
                         IconButton(
-                          icon: Icon(Icons.bookmark_border),
-                          onPressed: () {},
+                          icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
+                          onPressed: () async {
+                            try {
+                              await PostStorage().toggleSave(post.postId, currentUser.uid, currentUser.saved);
+                              if (!mounted) return;
+                              await Provider.of<UserProvider>(context, listen: false).refreshUser();
+                            } catch (error) {
+                              _showSnackBar("An error occurred: $error");
+                            }
+                          },
                         ),
                       ],
                     ),
