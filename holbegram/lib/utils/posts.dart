@@ -86,17 +86,19 @@ class _PostsState extends State<Posts> {
                           ),
                           Text(post.username),
                           Spacer(), // Créé l'espace entre l'username et l'élément situé sur la même ligne ("...")
-                          IconButton(
-                            icon: Icon(Icons.more_horiz),
-                            onPressed: () async {
-                              try {
-                                await PostStorage().deletePost(post.postId, post.publicId);
-                                _showSnackBar("Post Deleted");
-                              } catch (error) {
-                                _showSnackBar("An error occurred: $error");
-                              }
-                            },
-                          ),
+                          post.uid == uid
+                            ? IconButton(
+                                icon: Icon(Icons.more_horiz),
+                                onPressed: () async {
+                                  try {
+                                    await PostStorage().deletePost(post.postId, post.publicId, post.uid);
+                                    _showSnackBar("Post Deleted");
+                                  } catch (error) {
+                                    _showSnackBar("An error occurred: $error");
+                                  }
+                                },
+                              )
+                              : const SizedBox.shrink(), // N'affiche pas l'icône si ce n'est pas le post de l'user connecté.
                         ],
                       ),
                     ),
