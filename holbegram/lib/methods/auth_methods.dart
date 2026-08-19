@@ -79,4 +79,7 @@ class AuthMethode {
     return Users.fromSnap(snap); // Renvoie une instance d'Users avec les données de l'user actuel
   }
 
+  Future<void> logout() async {
+    await _auth.signOut();
+  }
 }
